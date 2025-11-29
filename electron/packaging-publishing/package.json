@@ -1,0 +1,301 @@
+{
+  "name": "electron-packaging-example",
+  "version": "1.0.0",
+  "description": "Electron打包和发布示例项目",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win --x64",
+    "build:win:ia32": "electron-builder --win --ia32",
+    "build:win:arm64": "electron-builder --win --arm64",
+    "build:mac": "electron-builder --mac --x64",
+    "build:mac:arm64": "electron-builder --mac --arm64",
+    "build:mac:universal": "electron-builder --mac --universal",
+    "build:linux": "electron-builder --linux",
+    "build:linux:deb": "electron-builder --linux deb",
+    "build:linux:rpm": "electron-builder --linux rpm",
+    "build:linux:appimage": "electron-builder --linux AppImage",
+    "build:linux:pacman": "electron-builder --linux pacman",
+    "build:all": "electron-builder -mwl",
+    "package": "electron-packager .",
+    "package:win": "electron-packager . --platform=win32 --arch=x64",
+    "package:mac": "electron-packager . --platform=darwin --arch=x64",
+    "package:linux": "electron-packager . --platform=linux --arch=x64",
+    "publish": "electron-builder --publish=always",
+    "publish:win": "electron-builder --win --publish=always",
+    "publish:mac": "electron-builder --mac --publish=always",
+    "publish:linux": "electron-builder --linux --publish=always",
+    "lint": "eslint .",
+    "test": "jest",
+    "clean": "rimraf dist out",
+    "prebuild": "npm run clean",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.4",
+    "electron-log": "^5.0.0",
+    "electron-store": "^8.1.0"
+  },
+  "devDependencies": {
+    "electron": "^26.2.4",
+    "electron-builder": "^24.6.4",
+    "electron-packager": "^17.1.2",
+    "electron-reload": "^2.0.0-alpha.1",
+    "eslint": "^8.48.0",
+    "eslint-plugin-electron": "^7.0.0",
+    "jest": "^29.6.4",
+    "rimraf": "^5.0.1"
+  },
+  "build": {
+    "appId": "com.example.electron-app",
+    "productName": "Electron示例应用",
+    "copyright": "Copyright © 2023 ${author}",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "public/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/",
+        "to": "resources/",
+        "filter": ["**/*"]
+      }
+    ],
+    "clean": true,
+    "npmRebuild": true,
+    "asar": true,
+    "compress": "maximum",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32", "arm64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64", "ia32", "arm64"]
+        },
+        "zip",
+        "7z"
+      ],
+      "icon": "build/icons/icon.ico",
+      "publisherName": "示例公司",
+      "signAndEditExecutable": true,
+      "signDlls": true,
+      "artifactName": "${productName}-Setup-${version}-${platform}-${arch}.${ext}",
+      "legalTrademarks": "示例公司",
+      "fileAssociations": [
+        {
+          "ext": "example",
+          "name": "示例文件",
+          "description": "Electron示例应用文件",
+          "icon": "build/icons/file.ico"
+        }
+      ]
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "pkg",
+          "arch": ["x64", "arm64"]
+        },
+        "zip",
+        "mas"
+      ],
+      "icon": "build/icons/icon.icns",
+      "category": "public.app-category.utilities",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": {
+        "appleId": "${process.env.APPLE_ID}",
+        "appleIdPassword": "${process.env.APPLE_ID_PASSWORD}",
+        "teamId": "${process.env.APPLE_TEAM_ID}"
+      },
+      "artifactName": "${productName}-${version}-${platform}-${arch}.${ext}",
+      "darkModeSupport": "true",
+      "extendInfo": {
+        "NSCameraUsageDescription": "此应用需要访问您的摄像头",
+        "NSMicrophoneUsageDescription": "此应用需要访问您的麦克风",
+        "NSPhotoLibraryUsageDescription": "此应用需要访问您的照片库"
+      }
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm",
+        "pacman",
+        "snap",
+        "tar.gz"
+      ],
+      "icon": "build/icons/",
+      "category": "Utility",
+      "synopsis": "Electron示例应用",
+      "description": "Electron应用打包和发布示例",
+      "vendor": "示例公司",
+      "artifactName": "${productName}-${version}-${platform}-${arch}.${ext}",
+      "desktop": {
+        "Name": "Electron示例应用",
+        "Comment": "Electron应用打包和发布示例",
+        "Categories": "Utility;Development;"
+      },
+      "executableName": "electron-example",
+      "maintainer": "开发者 <developer@example.com>",
+      "depends": [
+        "gconf2",
+        "gconf-service",
+        "libnotify4",
+        "libappindicator1",
+        "libxtst6",
+        "libnss3",
+        "libxss1"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icons/icon.ico",
+      "uninstallerIcon": "build/icons/uninstall.ico",
+      "installerHeaderIcon": "build/icons/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Electron示例应用",
+      "include": "build/installer.nsh",
+      "script": "build/installer.nsh",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "perMachine": false,
+      "unicode": true,
+      "language": "SimpChinese"
+    },
+    "portable": {
+      "unicode": true
+    },
+    "appImage": {
+      "systemIntegration": "ask",
+      "category": "Utility"
+    },
+    "deb": {
+      "depends": [
+        "gconf2",
+        "gconf-service",
+        "libnotify4",
+        "libappindicator1",
+        "libxtst6",
+        "libnss3"
+      ],
+      "homepage": "https://example.com",
+      "maintainer": "开发者 <developer@example.com>",
+      "section": "utils"
+    },
+    "rpm": {
+      "depends": [
+        "gconf2",
+        "gconf-service",
+        "libnotify",
+        "libappindicator",
+        "libXtst",
+        "nss"
+      ],
+      "summary": "Electron示例应用",
+      "description": "Electron应用打包和发布示例",
+      "vendor": "示例公司"
+    },
+    "snap": {
+      "summary": "Electron示例应用",
+      "description": "Electron应用打包和发布示例",
+      "grade": "stable",
+      "confinement": "strict",
+      "plugs": [
+        "default",
+        "camera",
+        "microphone"
+      ]
+    },
+    "mas": {
+      "type": "distribution",
+      "provisioningProfile": "embedded.provisionprofile",
+      "entitlements": "build/entitlements.mas.plist",
+      "entitlementsInherit": "build/entitlements.mas.inherit.plist",
+      "hardenedRuntime": true
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "username",
+        "repo": "electron-app",
+        "releaseType": "release",
+        "vPrefixedTagName": true,
+        "private": false
+      },
+      {
+        "provider": "generic",
+        "url": "https://example.com/downloads/",
+        "channel": "latest"
+      }
+    ],
+    "releaseInfo": {
+      "releaseNotes": "\n- 修复了一些问题\n- 添加了新功能\n- 提升了性能",
+      "releaseName": "版本 1.0.0",
+      "releaseDate": "2023-09-01T00:00:00Z"
+    },
+    "afterSign": "build/notarize.js"
+  },
+  "keywords": [
+    "electron",
+    "packaging",
+    "publishing",
+    "auto-update"
+  ],
+  "author": "示例公司",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/username/electron-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/electron-app/issues"
+  },
+  "homepage": "https://github.com/username/electron-app#readme",
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "electron_example"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": ["darwin"]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  }
+}

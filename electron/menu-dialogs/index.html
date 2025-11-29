@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Electron 菜单和对话框示例</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+      margin-top: 0;
+    }
+    
+    h2 {
+      color: #34495e;
+      margin-top: 30px;
+      border-left: 4px solid #3498db;
+      padding-left: 10px;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 6px;
+    }
+    
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    button {
+      padding: 10px 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+    }
+    
+    .secondary-button {
+      background-color: #95a5a6;
+    }
+    
+    .secondary-button:hover {
+      background-color: #7f8c8d;
+    }
+    
+    .success-button {
+      background-color: #2ecc71;
+    }
+    
+    .success-button:hover {
+      background-color: #27ae60;
+    }
+    
+    .warning-button {
+      background-color: #f39c12;
+    }
+    
+    .warning-button:hover {
+      background-color: #e67e22;
+    }
+    
+    .danger-button {
+      background-color: #e74c3c;
+    }
+    
+    .danger-button:hover {
+      background-color: #c0392b;
+    }
+    
+    .info-button {
+      background-color: #1abc9c;
+    }
+    
+    .info-button:hover {
+      background-color: #16a085;
+    }
+    
+    .result-box {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #ecf0f1;
+      border-radius: 4px;
+      border-left: 4px solid #3498db;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .file-content {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .context-area {
+      width: 100%;
+      height: 150px;
+      margin: 15px 0;
+      padding: 15px;
+      background-color: #f2f8fb;
+      border: 2px dashed #3498db;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .context-area:hover {
+      background-color: #e3f2fd;
+    }
+    
+    .note {
+      background-color: #fff3cd;
+      padding: 15px;
+      border-radius: 4px;
+      border-left: 4px solid #ffc107;
+      margin: 15px 0;
+      font-size: 14px;
+    }
+    
+    .flex-container {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .half-width {
+      flex: 1;
+    }
+    
+    @media (max-width: 768px) {
+      .flex-container {
+        flex-direction: column;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Electron 菜单和对话框示例</h1>
+    
+    <div class="note">
+      <strong>提示：</strong> 请尝试使用以下按钮测试各种菜单和对话框功能。应用程序的顶部也有预设的主菜单。
+    </div>
+    
+    <!-- 上下文菜单部分 -->
+    <div class="section">
+      <h2>上下文菜单</h2>
+      <p>右键点击下方区域或点击按钮显示上下文菜单：</p>
+      <div id="context-menu-area" class="context-area">
+        右键点击这里显示上下文菜单
+      </div>
+      <div class="button-group">
+        <button id="show-context-menu">显示上下文菜单</button>
+        <button id="show-advanced-menu">显示高级菜单</button>
+      </div>
+    </div>
+    
+    <!-- 对话框部分 -->
+    <h2>对话框示例</h2>
+    
+    <div class="section">
+      <h3>文件对话框</h3>
+      <div class="flex-container">
+        <div class="half-width">
+          <button id="open-file-dialog" class="secondary-button">打开文件...</button>
+          <div id="open-file-result" class="result-box">选择一个文件后，路径将显示在这里</div>
+        </div>
+        <div class="half-width">
+          <button id="save-file-dialog" class="secondary-button">保存文件...</button>
+          <div id="save-file-result" class="result-box">选择保存位置后，路径将显示在这里</div>
+        </div>
+      </div>
+      
+      <div class="flex-container">
+        <div class="half-width">
+          <button id="open-and-read-file" class="success-button">打开并读取文件</button>
+          <div id="file-read-result" class="result-box">文件内容将显示在这里</div>
+        </div>
+        <div class="half-width">
+          <button id="save-file-with-content" class="success-button">保存示例文件</button>
+          <div id="file-save-result" class="result-box">保存结果将显示在这里</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h3>消息对话框</h3>
+      <div class="button-group">
+        <button id="show-info-dialog" class="info-button">信息对话框</button>
+        <button id="show-warning-dialog" class="warning-button">警告对话框</button>
+        <button id="show-error-dialog" class="danger-button">错误对话框</button>
+        <button id="show-confirm-dialog" class="secondary-button">确认对话框</button>
+        <button id="show-custom-button-dialog" class="secondary-button">自定义按钮对话框</button>
+      </div>
+      <div id="dialog-result" class="result-box">对话框操作结果将显示在这里</div>
+    </div>
+    
+    <!-- 菜单动作反馈 -->
+    <div class="section">
+      <h2>菜单动作反馈</h2>
+      <div id="menu-action-result" class="result-box">菜单动作信息将显示在这里</div>
+    </div>
+  </div>
+  
+  <script>
+    // 初始化对话框结果区域
+    function initResultBoxes() {
+      document.getElementById('open-file-result').textContent = '选择一个文件后，路径将显示在这里';
+      document.getElementById('save-file-result').textContent = '选择保存位置后，路径将显示在这里';
+      document.getElementById('file-read-result').textContent = '文件内容将显示在这里';
+      document.getElementById('file-save-result').textContent = '保存结果将显示在这里';
+      document.getElementById('dialog-result').textContent = '对话框操作结果将显示在这里';
+      document.getElementById('menu-action-result').textContent = '菜单动作信息将显示在这里';
+    }
+    
+    // 更新结果区域
+    function updateResult(elementId, content) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = JSON.stringify(content, null, 2);
+      }
+    }
+    
+    // 文件对话框示例
+    async function setupFileDialogExamples() {
+      // 打开文件对话框
+      document.getElementById('open-file-dialog').addEventListener('click', async () => {
+        try {
+          const result = await window.electronMenuDialogAPI.showOpenDialog({
+            properties: ['openFile', 'multiSelections'],
+            filters: [
+              { name: 'Text Files', extensions: ['txt'] },
+              { name: 'All Files', extensions: ['*'] }
+            ]
+          });
+          updateResult('open-file-result', result);
+        } catch (error) {
+          updateResult('open-file-result', { error: error.message });
+        }
+      });
+      
+      // 保存文件对话框
+      document.getElementById('save-file-dialog').addEventListener('click', async () => {
+        try {
+          const result = await window.electronMenuDialogAPI.showSaveDialog({
+            title: '保存示例文件',
+            defaultPath: 'example.txt',
+            filters: [
+              { name: 'Text Files', extensions: ['txt'] },
+              { name: 'All Files', extensions: ['*'] }
+            ]
+          });
+          updateResult('save-file-result', result);
+        } catch (error) {
+          updateResult('save-file-result', { error: error.message });
+        }
+      });
+      
+      // 打开并读取文件
+      document.getElementById('open-and-read-file').addEventListener('click', async () => {
+        try {
+          const result = await window.electronMenuDialogAPI.openAndReadFile();
+          updateResult('file-read-result', result);
+        } catch (error) {
+          updateResult('file-read-result', { error: error.message });
+        }
+      });
+      
+      // 保存文件内容
+      document.getElementById('save-file-with-content').addEventListener('click', async () => {
+        try {
+          const content = `这是一个示例文件内容。\n创建时间: ${new Date().toLocaleString()}\n\n这是使用Electron对话框API保存的文件。`;
+          const result = await window.electronMenuDialogAPI.saveFileWithDialog(content, 'example.txt');
+          updateResult('file-save-result', result);
+        } catch (error) {
+          updateResult('file-save-result', { error: error.message });
+        }
+      });
+    }
+    
+    // 消息对话框示例
+    async function setupMessageDialogExamples() {
+      // 信息对话框
+      document.getElementById('show-info-dialog').addEventListener('click', async () => {
+        try {
+          const result = await window.electronMenuDialogAPI.showInfoDialog('这是一条信息', 'Electron菜单和对话框示例应用程序');
+          updateResult('dialog-result', { type: 'info', result });
+        } catch (error) {
+          updateResult('dialog-result', { type: 'error', error: error.message });
+        }
+      });
+      
+      // 警告对话框
+      document.getElementById('show-warning-dialog').addEventListener('click', async () => {
+        try {
+          const result = await window.electronMenuDialogAPI.showWarningDialog('这是一条警告', '请确保你了解操作的后果');
+          updateResult('dialog-result', { type: 'warning', result });
+        } catch (error) {
+          updateResult('dialog-result', { type: 'error', error: error.message });
+        }
+      });
+      
+      // 错误对话框
+      document.getElementById('show-error-dialog').addEventListener('click', async () => {
+        try {
+          const result = await window.electronMenuDialogAPI.showErrorDialog('发生错误', '这是一个示例错误消息');
+          updateResult('dialog-result', { type: 'error', result });
+        } catch (error) {
+          updateResult('dialog-result', { type: 'error', error: error.message });
+        }
+      });
+      
+      // 确认对话框
+      document.getElementById('show-confirm-dialog').addEventListener('click', async () => {
+        try {
+          const result = await window.electronMenuDialogAPI.showConfirmDialog('确认操作', '你确定要执行这个操作吗？');
+          updateResult('dialog-result', { type: 'confirm', result });
+        } catch (error) {
+          updateResult('dialog-result', { type: 'error', error: error.message });
+        }
+      });
+      
+      // 自定义按钮对话框
+      document.getElementById('show-custom-button-dialog').addEventListener('click', async () => {
+        try {
+          const result = await window.electronMenuDialogAPI.showCustomButtonDialog('请选择一个选项', ['选项 A', '选项 B', '选项 C', '取消']);
+          updateResult('dialog-result', { type: 'custom', result });
+        } catch (error) {
+          updateResult('dialog-result', { type: 'error', error: error.message });
+        }
+      });
+    }
+    
+    // 菜单示例
+    function setupMenuExamples() {
+      // 显示上下文菜单
+      document.getElementById('show-context-menu').addEventListener('click', () => {
+        window.electronMenuDialogAPI.showContextMenu();
+      });
+      
+      // 显示高级菜单
+      document.getElementById('show-advanced-menu').addEventListener('click', () => {
+        window.electronMenuDialogAPI.showAdvancedMenu();
+      });
+      
+      // 上下文区域右键点击
+      document.getElementById('context-menu-area').addEventListener('contextmenu', (e) => {
+        e.preventDefault(); // 阻止默认上下文菜单
+        window.electronMenuDialogAPI.showContextMenu();
+      });
+    }
+    
+    // 设置菜单动作监听器
+    function setupMenuActionListeners() {
+      // 监听菜单动作
+      window.electronMenuDialogAPI.onMenuAction((action) => {
+        updateResult('menu-action-result', { action, timestamp: new Date().toISOString() });
+      });
+      
+      // 监听自定义菜单项点击
+      window.electronMenuDialogAPI.onCustomMenuItemClick((data) => {
+        updateResult('menu-action-result', {
+          type: 'custom-menu-item-click',
+          data,
+          timestamp: new Date().toISOString()
+        });
+      });
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Electron菜单和对话框示例页面已加载');
+      initResultBoxes();
+      setupFileDialogExamples();
+      setupMessageDialogExamples();
+      setupMenuExamples();
+      setupMenuActionListeners();
+    });
+  </script>
+</body>
+</html>

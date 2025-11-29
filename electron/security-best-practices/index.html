@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Electron安全最佳实践</title>
+  <!-- 内容安全策略(CSP)配置 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; upgrade-insecure-requests;">
+  
+  <style>
+    /* 基础样式 */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+    
+    .subtitle {
+      margin: 10px 0 0;
+      opacity: 0.9;
+      font-size: 16px;
+    }
+    
+    .content {
+      padding: 30px;
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #eaeaea;
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+    
+    .tab {
+      padding: 12px 24px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 16px;
+      color: #666;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    
+    .tab.active {
+      color: #3498db;
+      border-bottom-color: #3498db;
+      font-weight: 500;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+    }
+    
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    
+    h3 {
+      color: #34495e;
+      margin: 20px 0 10px;
+    }
+    
+    p {
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+    
+    .card {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .code-block {
+      background: #f6f8fa;
+      border-radius: 4px;
+      padding: 15px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      border: 1px solid #e1e4e8;
+      margin: 15px 0;
+    }
+    
+    .button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    
+    .button:hover {
+      background: #2980b9;
+    }
+    
+    .button.danger {
+      background: #e74c3c;
+    }
+    
+    .button.danger:hover {
+      background: #c0392b;
+    }
+    
+    .button.secondary {
+      background: #95a5a6;
+    }
+    
+    .button.secondary:hover {
+      background: #7f8c8d;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #555;
+    }
+    
+    input[type="text"],
+    input[type="url"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    
+    .result {
+      background: #e8f4fc;
+      border: 1px solid #b8e0f8;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    
+    .success {
+      background: #e8f5e8;
+      border-color: #c3e6cb;
+      color: #155724;
+    }
+    
+    .error {
+      background: #fdf2e9;
+      border-color: #f5c6cb;
+      color: #721c24;
+    }
+    
+    .warning {
+      background: #fff3cd;
+      border-color: #ffeaa7;
+      color: #856404;
+    }
+    
+    .list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .list li {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .list li:last-child {
+      border-bottom: none;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-left: 10px;
+    }
+    
+    .badge.success {
+      background: #2ecc71;
+      color: white;
+    }
+    
+    .badge.error {
+      background: #e74c3c;
+      color: white;
+    }
+    
+    .badge.warning {
+      background: #f39c12;
+      color: white;
+    }
+    
+    .security-checks {
+      margin-top: 20px;
+    }
+    
+    .check-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .check-item .status {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+    }
+    
+    .check-item .status.pass {
+      background: #2ecc71;
+    }
+    
+    .check-item .status.fail {
+      background: #e74c3c;
+    }
+    
+    .check-item .status.warn {
+      background: #f39c12;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #f8f9fa;
+      border-top: 1px solid #e9ecef;
+      color: #6c757d;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        border-radius: 0;
+      }
+      
+      .content {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Electron 安全最佳实践</h1>
+      <p class="subtitle">演示如何构建安全可靠的Electron应用程序</p>
+    </header>
+    
+    <div class="content">
+      <div class="tabs">
+        <button class="tab active" data-tab="overview">概述</button>
+        <button class="tab" data-tab="security-checks">安全检查</button>
+        <button class="tab" data-tab="api-demo">API演示</button>
+        <button class="tab" data-tab="code-examples">代码示例</button>
+        <button class="tab" data-tab="best-practices">最佳实践</button>
+      </div>
+      
+      <!-- 概述标签页 -->
+      <div class="tab-content active" id="overview">
+        <div class="section">
+          <h2>Electron安全概述</h2>
+          <p>Electron应用结合了Node.js和Chromium，提供了强大的功能，但也带来了安全挑战。本示例展示了如何通过实施安全最佳实践来保护您的应用和用户数据。</p>
+          
+          <div class="card">
+            <h3>核心安全概念</h3>
+            <ul class="list">
+              <li><strong>上下文隔离 (Context Isolation)</strong> - 将渲染进程与Node.js环境隔离</li>
+              <li><strong>预加载脚本 (Preload Scripts)</strong> - 安全地桥接渲染进程和主进程</li>
+              <li><strong>内容安全策略 (CSP)</strong> - 防止XSS和数据注入攻击</li>
+              <li><strong>最小权限原则</strong> - 仅授予应用必要的权限</li>
+              <li><strong>输入验证</strong> - 验证和净化所有用户输入</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="section">
+          <h2>本示例包含</h2>
+          <ul class="list">
+            <li>安全的主进程配置</li>
+            <li>使用contextBridge的预加载脚本</li>
+            <li>内容安全策略实现</li>
+            <li>安全的IPC通信模式</li>
+            <li>文件操作安全验证</li>
+            <li>URL安全检查</li>
+            <li>安全检查工具</li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 安全检查标签页 -->
+      <div class="tab-content" id="security-checks">
+        <div class="section">
+          <h2>安全检查结果</h2>
+          <p>以下是应用启动时执行的安全检查结果：</p>
+          
+          <div class="security-checks" id="security-results">
+            <div class="check-item">
+              <div class="status warn">!</div>
+              <span>正在加载安全检查结果...</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="section">
+          <h2>应用信息</h2>
+          <div id="app-info" class="card">
+            <p>正在获取应用信息...</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- API演示标签页 -->
+      <div class="tab-content" id="api-demo">
+        <div class="section">
+          <h2>安全API使用演示</h2>
+          
+          <div class="card">
+            <h3>1. 打开外部链接</h3>
+            <p>演示如何安全地打开外部URL：</p>
+            <div class="form-group">
+              <label for="url-input">URL:</label>
+              <input type="url" id="url-input" placeholder="https://example.com" value="https://www.electronjs.org/docs/tutorial/security">
+            </div>
+            <button class="button" id="open-url-btn">打开URL</button>
+            <div id="url-result" class="result" style="display: none;"></div>
+          </div>
+          
+          <div class="card">
+            <h3>2. 显示对话框</h3>
+            <p>演示如何安全地显示对话框：</p>
+            <button class="button" id="show-dialog-btn">显示信息对话框</button>
+            <button class="button secondary" id="open-file-btn">打开文件</button>
+            <div id="dialog-result" class="result" style="display: none;"></div>
+          </div>
+          
+          <div class="card">
+            <h3>3. 文件操作</h3>
+            <p>演示安全的文件保存操作：</p>
+            <div class="form-group">
+              <label for="file-content">文件内容:</label>
+              <textarea id="file-content" placeholder="输入要保存的内容">这是一个安全保存的示例文件。
+
+此示例展示了如何在Electron应用中安全地处理文件操作。</textarea>
+            </div>
+            <button class="button" id="save-file-btn">保存文件</button>
+            <div id="file-result" class="result" style="display: none;"></div>
+          </div>
+          
+          <div class="card">
+            <h3>4. 输入验证</h3>
+            <p>演示如何安全地验证和净化用户输入：</p>
+            <div class="form-group">
+              <label for="user-input">用户输入 (尝试输入HTML或脚本):</label>
+              <input type="text" id="user-input" placeholder="输入文本进行安全验证">
+            </div>
+            <button class="button" id="sanitize-btn">验证和净化</button>
+            <div id="sanitize-result" class="result" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 代码示例标签页 -->
+      <div class="tab-content" id="code-examples">
+        <div class="section">
+          <h2>安全配置代码示例</h2>
+          
+          <h3>主进程安全配置</h3>
+          <div class="code-block">
+// 获取安全的webPreferences配置
+const webPreferences = getSecureWebPreferences({
+  preload: path.join(__dirname, 'preload.js')
+});
+
+// 创建安全配置的浏览器窗口
+const mainWindow = new BrowserWindow({
+  width: 1000,
+  height: 800,
+  webPreferences: webPreferences
+});
+          </div>
+          
+          <h3>预加载脚本中的contextBridge使用</h3>
+          <div class="code-block">
+// 使用contextBridge安全地暴露API给渲染进程
+contextBridge.exposeInMainWorld('electronAPI', {
+  // 安全的API暴露
+  openExternal: async (url) => {
+    // 验证URL
+    const allowedProtocols = ['https:', 'http:'];
+    const urlObj = new URL(url);
+    if (!allowedProtocols.includes(urlObj.protocol)) {
+      throw new Error('不支持的协议');
+    }
+    // 安全打开外部链接
+    return shell.openExternal(url);
+  }
+});
+          </div>
+          
+          <h3>内容安全策略(CSP)配置</h3>
+          <div class="code-block">
+<!-- 在HTML头部配置CSP -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data:;
+  connect-src 'self';
+  object-src 'none';
+  frame-src 'none';
+  upgrade-insecure-requests;">
+          </div>
+          
+          <h3>安全的IPC消息验证</h3>
+          <div class="code-block">
+// 验证IPC消息格式
+function validateIPCMessage(message, schema) {
+  if (typeof message !== 'object' || message === null) {
+    return false;
+  }
+  
+  // 检查所有必需的字段
+  for (const [key, type] of Object.entries(schema)) {
+    if (!(key in message) || typeof message[key] !== type) {
+      return false;
+    }
+  }
+  
+  return true;
+}
+          </div>
+        </div>
+      </div>
+      
+      <!-- 最佳实践标签页 -->
+      <div class="tab-content" id="best-practices">
+        <div class="section">
+          <h2>Electron安全最佳实践</h2>
+          
+          <div class="card">
+            <h3>1. 渲染器进程安全</h3>
+            <ul class="list">
+              <li>始终启用<strong>上下文隔离</strong> (contextIsolation: true)</li>
+              <li>默认禁用<strong>nodeIntegration</strong> (nodeIntegration: false)</li>
+              <li>不使用<strong>enableRemoteModule</strong> (enableRemoteModule: false)</li>
+              <li>配置严格的<strong>内容安全策略</strong></li>
+              <li>通过<strong>预加载脚本</strong>暴露必要的API</li>
+            </ul>
+          </div>
+          
+          <div class="card">
+            <h3>2. 预加载脚本安全</h3>
+            <ul class="list">
+              <li>使用<strong>contextBridge</strong>而不是直接修改window对象</li>
+              <li>仅暴露<strong>必要的功能</strong>给渲染进程</li>
+              <li>在暴露的API中实施<strong>输入验证</strong></li>
+              <li>避免在预加载脚本中包含<strong>敏感逻辑</strong></li>
+              <li>所有IPC通信进行<strong>消息验证</strong></li>
+            </ul>
+          </div>
+          
+          <div class="card">
+            <h3>3. 主进程安全</h3>
+            <ul class="list">
+              <li>验证所有<strong>IPC消息</strong>的来源和格式</li>
+              <li>实施<strong>最小权限原则</strong></li>
+              <li>安全处理<strong>文件系统操作</strong></li>
+              <li>正确配置<strong>webPreferences</strong></li>
+              <li>使用<strong>shell模块</strong>打开外部链接</li>
+            </ul>
+          </div>
+          
+          <div class="card">
+            <h3>4. 网络安全</h3>
+            <ul class="list">
+              <li>使用<strong>HTTPS</strong>进行所有网络请求</li>
+              <li>验证所有<strong>URL</strong>的安全性</li>
+              <li>正确处理<strong>证书错误</strong></li>
+              <li>实施<strong>同源策略</strong></li>
+              <li>限制<strong>导航</strong>到受信任的来源</li>
+            </ul>
+          </div>
+          
+          <div class="card">
+            <h3>5. 应用整体安全</h3>
+            <ul class="list">
+              <li>定期更新<strong>Electron版本</strong></li>
+              <li>扫描<strong>依赖项</strong>的安全漏洞</li>
+              <li>实施<strong>代码签名</strong></li>
+              <li>配置适当的<strong>应用权限</strong></li>
+              <li>实施<strong>错误处理</strong>，避免信息泄露</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <footer>
+      <p>Electron安全最佳实践示例 © 2023</p>
+    </footer>
+  </div>
+
+  <script>
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      // 初始化安全设置
+      if (window.electronAPI && window.electronAPI.setupSecurity) {
+        window.electronAPI.setupSecurity();
+      }
+      
+      // 标签页切换功能
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          // 移除所有活动状态
+          tabs.forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+          });
+          
+          // 添加当前活动状态
+          tab.classList.add('active');
+          const tabId = tab.getAttribute('data-tab');
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // 加载应用信息
+      loadAppInfo();
+      
+      // 监听安全检查结果
+      listenForSecurityResults();
+      
+      // 设置API演示事件监听器
+      setupApiDemoListeners();
+    });
+    
+    // 加载应用信息
+    async function loadAppInfo() {
+      try {
+        const infoContainer = document.getElementById('app-info');
+        const info = await window.electronAPI.getAppInfo();
+        
+        infoContainer.innerHTML = `
+          <div class="list">
+            <li><strong>应用名称:</strong> ${info.name || 'N/A'}</li>
+            <li><strong>应用版本:</strong> ${info.version || 'N/A'}</li>
+            <li><strong>Electron版本:</strong> ${info.electronVersion || 'N/A'}</li>
+            <li><strong>平台:</strong> ${info.platform || 'N/A'}</li>
+            <li><strong>环境:</strong> ${info.isDev ? '开发环境' : '生产环境'}</li>
+          </div>
+        `;
+      } catch (error) {
+        console.error('获取应用信息失败:', error);
+      }
+    }
+    
+    // 监听安全检查结果
+    function listenForSecurityResults() {
+      if (window.electronAPI && window.electronAPI.onNotification) {
+        window.electronAPI.onNotification((data) => {
+          if (data.type === 'security-check-results') {
+            displaySecurityResults(data.results);
+          }
+        });
+      }
+      
+      // 也直接从IPC接收安全检查结果
+      window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'security-check-results') {
+          displaySecurityResults(event.data.results);
+        }
+      });
+    }
+    
+    // 显示安全检查结果
+    function displaySecurityResults(results) {
+      const container = document.getElementById('security-results');
+      container.innerHTML = '';
+      
+      // 显示通过的检查
+      if (results.passed && results.passed.length > 0) {
+        results.passed.forEach(check => {
+          const item = document.createElement('div');
+          item.className = 'check-item';
+          item.innerHTML = `
+            <div class="status pass">✓</div>
+            <span>${check}</span>
+          `;
+          container.appendChild(item);
+        });
+      }
+      
+      // 显示失败的检查
+      if (results.failed && results.failed.length > 0) {
+        results.failed.forEach(check => {
+          const item = document.createElement('div');
+          item.className = 'check-item';
+          item.innerHTML = `
+            <div class="status fail">✗</div>
+            <span>${check}</span>
+          `;
+          container.appendChild(item);
+        });
+      }
+      
+      // 显示警告
+      if (results.warnings && results.warnings.length > 0) {
+        results.warnings.forEach(check => {
+          const item = document.createElement('div');
+          item.className = 'check-item';
+          item.innerHTML = `
+            <div class="status warn">!</div>
+            <span>${check}</span>
+          `;
+          container.appendChild(item);
+        });
+      }
+    }
+    
+    // 设置API演示事件监听器
+    function setupApiDemoListeners() {
+      // 打开外部URL
+      document.getElementById('open-url-btn').addEventListener('click', async () => {
+        const urlInput = document.getElementById('url-input');
+        const resultDiv = document.getElementById('url-result');
+        
+        try {
+          const url = urlInput.value.trim();
+          if (!url) {
+            throw new Error('请输入有效的URL');
+          }
+          
+          const result = await window.electronAPI.openExternal(url);
+          
+          if (result.success) {
+            resultDiv.textContent = 'URL已成功打开';
+            resultDiv.className = 'result success';
+          } else {
+            resultDiv.textContent = `打开URL失败: ${result.error}`;
+            resultDiv.className = 'result error';
+          }
+          
+          resultDiv.style.display = 'block';
+        } catch (error) {
+          resultDiv.textContent = `错误: ${error.message}`;
+          resultDiv.className = 'result error';
+          resultDiv.style.display = 'block';
+        }
+      });
+      
+      // 显示信息对话框
+      document.getElementById('show-dialog-btn').addEventListener('click', async () => {
+        const resultDiv = document.getElementById('dialog-result');
+        
+        try {
+          const result = await window.electronAPI.showDialog({
+            type: 'message',
+            title: '信息对话框示例',
+            message: '这是一个安全显示的对话框',
+            detail: '此对话框是通过安全的IPC通信从主进程显示的',
+            buttons: ['确定', '取消'],
+            defaultId: 0,
+            cancelId: 1
+          });
+          
+          if (result.success) {
+            resultDiv.textContent = `对话框结果: ${JSON.stringify(result.result)}`;
+            resultDiv.className = 'result success';
+          } else {
+            resultDiv.textContent = `显示对话框失败: ${result.error}`;
+            resultDiv.className = 'result error';
+          }
+          
+          resultDiv.style.display = 'block';
+        } catch (error) {
+          resultDiv.textContent = `错误: ${error.message}`;
+          resultDiv.className = 'result error';
+          resultDiv.style.display = 'block';
+        }
+      });
+      
+      // 打开文件对话框
+      document.getElementById('open-file-btn').addEventListener('click', async () => {
+        const resultDiv = document.getElementById('dialog-result');
+        
+        try {
+          const result = await window.electronAPI.showDialog({
+            type: 'openFile',
+            title: '打开文件',
+            properties: ['openFile'],
+            filters: [
+              { name: '文本文件', extensions: ['txt', 'md', 'json'] },
+              { name: '所有文件', extensions: ['*'] }
+            ]
+          });
+          
+          if (result.success) {
+            resultDiv.textContent = `文件选择结果: ${JSON.stringify(result.result)}`;
+            resultDiv.className = 'result success';
+          } else {
+            resultDiv.textContent = `打开文件失败: ${result.error}`;
+            resultDiv.className = 'result error';
+          }
+          
+          resultDiv.style.display = 'block';
+        } catch (error) {
+          resultDiv.textContent = `错误: ${error.message}`;
+          resultDiv.className = 'result error';
+          resultDiv.style.display = 'block';
+        }
+      });
+      
+      // 保存文件
+      document.getElementById('save-file-btn').addEventListener('click', async () => {
+        const contentInput = document.getElementById('file-content');
+        const resultDiv = document.getElementById('file-result');
+        
+        try {
+          const content = contentInput.value;
+          
+          const result = await window.electronAPI.saveFile(content, {
+            title: '保存文件',
+            defaultPath: '安全示例文件.txt',
+            filters: [
+              { name: '文本文件', extensions: ['txt'] },
+              { name: '所有文件', extensions: ['*'] }
+            ]
+          });
+          
+          if (result.success) {
+            resultDiv.textContent = `文件已成功保存到: ${result.filePath}`;
+            resultDiv.className = 'result success';
+          } else if (result.canceled) {
+            resultDiv.textContent = '保存操作已取消';
+            resultDiv.className = 'result';
+          } else {
+            resultDiv.textContent = `保存文件失败: ${result.error}`;
+            resultDiv.className = 'result error';
+          }
+          
+          resultDiv.style.display = 'block';
+        } catch (error) {
+          resultDiv.textContent = `错误: ${error.message}`;
+          resultDiv.className = 'result error';
+          resultDiv.style.display = 'block';
+        }
+      });
+      
+      // 输入验证和净化
+      document.getElementById('sanitize-btn').addEventListener('click', async () => {
+        const inputElement = document.getElementById('user-input');
+        const resultDiv = document.getElementById('sanitize-result');
+        
+        try {
+          const input = inputElement.value;
+          
+          if (!window.electronAPI || !window.electronAPI.sanitizeHTML) {
+            throw new Error('安全API不可用');
+          }
+          
+          const sanitized = window.electronAPI.sanitizeHTML(input);
+          
+          resultDiv.innerHTML = `
+            <strong>原始输入:</strong> ${escapeHTML(input)}<br>
+            <strong>净化后:</strong> ${escapeHTML(sanitized)}
+          `;
+          resultDiv.className = 'result success';
+          resultDiv.style.display = 'block';
+        } catch (error) {
+          resultDiv.textContent = `错误: ${error.message}`;
+          resultDiv.className = 'result error';
+          resultDiv.style.display = 'block';
+        }
+      });
+    }
+    
+    // HTML转义函数
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+    
+    // 防止eval和Function构造函数被滥用
+    if (typeof window.eval === 'function') {
+      window.eval = undefined;
+    }
+    
+    // 监听来自主进程的消息
+    window.addEventListener('message', (event) => {
+      // 确保消息来源可信
+      if (event.source !== window) return;
+      
+      // 处理特定类型的消息
+      if (event.data && event.data.type) {
+        console.log('收到来自主进程的消息:', event.data.type);
+      }
+    });
+  </script>
+</body>
+</html>

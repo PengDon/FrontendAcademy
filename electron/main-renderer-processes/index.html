@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electron 多进程示例 - 主窗口</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #eaeaea;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button.secondary {
+            background-color: #95a5a6;
+        }
+        button.secondary:hover {
+            background-color: #7f8c8d;
+        }
+        button.danger {
+            background-color: #e74c3c;
+        }
+        button.danger:hover {
+            background-color: #c0392b;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .info-box {
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .message-box {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        .message-box .timestamp {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .checkbox-label input {
+            width: auto;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Electron 多进程示例 - 主窗口</h1>
+        
+        <div class="section">
+            <h2>窗口管理</h2>
+            <button id="create-window-btn">创建次要窗口</button>
+            <button id="close-secondary-btn" class="secondary">关闭次要窗口</button>
+            <div id="window-status" class="info-box">点击按钮创建次要窗口</div>
+        </div>
+        
+        <div class="section">
+            <h2>系统信息</h2>
+            <button id="get-system-info-btn">获取系统信息</button>
+            <div id="system-info" class="info-box">点击按钮获取系统信息</div>
+        </div>
+        
+        <div class="section">
+            <h2>进程间通信</h2>
+            <textarea id="message-input" rows="3" placeholder="输入要发送的消息..."></textarea>
+            <div class="checkbox-label">
+                <input type="checkbox" id="broadcast-checkbox">
+                <label for="broadcast-checkbox">同时广播给所有窗口</label>
+            </div>
+            <button id="send-message-btn">发送消息</button>
+            
+            <h3>消息历史</h3>
+            <div id="messages-container" class="info-box"></div>
+        </div>
+        
+        <div class="section">
+            <h2>性能演示</h2>
+            <button id="heavy-task-btn">执行耗时任务</button>
+            <div id="task-result" class="info-box">点击按钮执行耗时任务</div>
+        </div>
+        
+        <div class="section">
+            <h2>窗口大小监控</h2>
+            <div id="window-size-info" class="info-box">调整窗口大小以查看变化</div>
+        </div>
+    </div>
+
+    <script>
+        // 等待DOM加载完成
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查预加载脚本是否成功暴露了API
+            if (!window.mainWindowAPI) {
+                console.error('预加载脚本API未成功暴露！')
+                return
+            }
+            
+            const mainWindowAPI = window.mainWindowAPI
+            
+            // 窗口管理
+            document.getElementById('create-window-btn').addEventListener('click', async () => {
+                try {
+                    const result = await mainWindowAPI.createSecondaryWindow()
+                    document.getElementById('window-status').textContent = '次要窗口已创建'
+                } catch (error) {
+                    document.getElementById('window-status').textContent = `创建窗口失败: ${error.message}`
+                }
+            })
+            
+            document.getElementById('close-secondary-btn').addEventListener('click', async () => {
+                try {
+                    const result = await mainWindowAPI.closeWindow('secondary')
+                    if (result) {
+                        document.getElementById('window-status').textContent = '次要窗口已关闭'
+                    } else {
+                        document.getElementById('window-status').textContent = '次要窗口不存在'
+                    }
+                } catch (error) {
+                    document.getElementById('window-status').textContent = `关闭窗口失败: ${error.message}`
+                }
+            })
+            
+            // 获取系统信息
+            document.getElementById('get-system-info-btn').addEventListener('click', async () => {
+                try {
+                    const systemInfo = await mainWindowAPI.getSystemInfo()
+                    document.getElementById('system-info').textContent = JSON.stringify(systemInfo, null, 2)
+                } catch (error) {
+                    document.getElementById('system-info').textContent = `获取系统信息失败: ${error.message}`
+                }
+            })
+            
+            // 发送消息
+            document.getElementById('send-message-btn').addEventListener('click', () => {
+                const messageInput = document.getElementById('message-input')
+                const broadcastCheckbox = document.getElementById('broadcast-checkbox')
+                const content = messageInput.value.trim()
+                
+                if (content) {
+                    mainWindowAPI.sendMessage(content, broadcastCheckbox.checked)
+                    messageInput.value = ''
+                    
+                    // 添加到消息历史
+                    addMessageToHistory('我', content)
+                }
+            })
+            
+            // 监听来自主进程的消息
+            const cleanupMessageListener = mainWindowAPI.onMessageFromMain((message) => {
+                addMessageToHistory('主进程', message.response, message.timestamp)
+            })
+            
+            // 执行耗时任务
+            document.getElementById('heavy-task-btn').addEventListener('click', async () => {
+                const taskResultEl = document.getElementById('task-result')
+                taskResultEl.textContent = '执行任务中，请稍候...'
+                
+                try {
+                    // 执行100万次迭代的计算（在实际应用中，这种任务应该放在工作线程中）
+                    const result = await mainWindowAPI.performHeavyTask(1000000)
+                    taskResultEl.textContent = JSON.stringify(result, null, 2)
+                } catch (error) {
+                    taskResultEl.textContent = `执行任务失败: ${error.message}`
+                }
+            })
+            
+            // 监听窗口大小变化
+            const cleanupResizeListener = mainWindowAPI.onWindowResized((dimensions) => {
+                document.getElementById('window-size-info').textContent = 
+                    `窗口大小: ${dimensions.width} × ${dimensions.height} 像素`
+            })
+            
+            // 辅助函数：添加消息到历史记录
+            function addMessageToHistory(sender, content, timestamp = new Date().toISOString()) {
+                const messagesContainer = document.getElementById('messages-container')
+                const messageBox = document.createElement('div')
+                messageBox.className = 'message-box'
+                
+                const formattedTime = new Date(timestamp).toLocaleString()
+                messageBox.innerHTML = `
+                    <strong>${sender}:</strong> ${content}
+                    <div class="timestamp">${formattedTime}</div>
+                `
+                
+                messagesContainer.appendChild(messageBox)
+                messagesContainer.scrollTop = messagesContainer.scrollHeight
+            }
+            
+            // 清理事件监听器
+            window.addEventListener('beforeunload', () => {
+                cleanupMessageListener()
+                cleanupResizeListener()
+            })
+        })
+    </script>
+</body>
+</html>
