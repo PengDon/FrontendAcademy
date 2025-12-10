@@ -2,7 +2,7 @@
 
 ## 📚 介绍
 
-HTML (HyperText Markup Language) 是构建网页的标准标记语言，它定义了网页的结构和内容。HTML使用标签来标识不同类型的内容元素。
+HTML (HyperText Markup Language) 是构建网页的标准标记语言，它定义了网页的结构和内容。HTML使用标签来标识不同类型的内容元素，是Web开发的基础。
 
 ### 核心特点
 
@@ -12,25 +12,42 @@ HTML (HyperText Markup Language) 是构建网页的标准标记语言，它定�
 - **平台无关**：可在任何设备和浏览器上运行
 - **与CSS/JS结合**：与样式和交互逻辑无缝协作
 
+## 📁 目录结构
+
+本HTML基础教程分为以下子目录，每个子目录都包含详细的学习内容和示例代码：
+
+| 子目录 | 主要内容 |
+| ------ | ------- |
+| [forms](forms/README.md) | 表单基础结构、验证和最佳实践 |
+| [accessibility](accessibility/README.md) | HTML可访问性、ARIA属性和键盘导航等内容 |
+| [multimedia](multimedia/README.md) | HTML5音频、视频、Canvas和SVG等多媒体内容 |
+| [responsive](responsive/README.md) | 响应式HTML设计、媒体查询和弹性布局等内容 |
+| [best-practices](best-practices/README.md) | HTML开发最佳实践、代码结构和性能优化等内容 |
+| [seo](seo/README.md) | HTML与SEO优化、元标签和语义化HTML等内容 |
+| [html5-features](html5-features/README.md) | HTML5新特性和API |
+| [tables](tables/README.md) | HTML表格设计和最佳实践 |
+
 ## 📊 学习路径
 
 ### 基础阶段
-- 理解HTML基本结构和语法
-- 掌握常用标签和属性
-- 学习表单和输入元素
-- 实践简单网页布局
+1. 理解HTML基本结构和语法
+2. 掌握常用标签和属性
+3. 学习HTML表格设计 ([tables](tables/README.md))
+4. 实践简单网页布局
 
 ### 进阶阶段
-- 深入理解语义化HTML
-- 学习HTML5新特性
-- 掌握无障碍访问标准
-- 实践响应式网页结构
+1. 深入理解语义化HTML
+2. 学习表单设计和验证 ([forms](forms/README.md))
+3. 掌握HTML5新特性 ([html5-features](html5-features/README.md))
+4. 学习无障碍访问标准 ([accessibility](accessibility/README.md))
+5. 实践响应式网页结构 ([responsive](responsive/README.md))
 
 ### 高级阶段
-- 掌握HTML5 API
-- 学习Web组件基础
-- 优化页面性能和SEO
-- 实践复杂页面结构设计
+1. 掌握HTML5 API ([html5-features](html5-features/README.md))
+2. 学习多媒体内容开发 ([multimedia](multimedia/README.md))
+3. 优化页面性能和SEO ([seo](seo/README.md))
+4. 遵循HTML开发最佳实践 ([best-practices](best-practices/README.md))
+5. 实践复杂页面结构设计
 
 ## HTML 基本结构
 

@@ -28,6 +28,21 @@ FrontendAcademy/
 │   ├── html/               # HTML相关知识
 │   ├── css/                # CSS相关知识
 │   ├── js/                 # JavaScript相关知识
+│   │   ├── fundamentals/   # JavaScript基础语法
+│   │   ├── data-types/     # 数据类型详解
+│   │   ├── operators/      # 运算符
+│   │   ├── control-flow/   # 控制流
+│   │   ├── functions/      # 函数
+│   │   ├── objects/        # 对象
+│   │   ├── arrays/         # 数组
+│   │   ├── es6+/           # ES6+特性
+│   │   ├── async-patterns/ # 异步编程模式
+│   │   ├── dom/            # DOM操作
+│   │   ├── events/         # 事件处理
+│   │   ├── modules/        # 模块化
+│   │   ├── error-handling/ # 错误处理
+│   │   ├── performance/    # 性能优化
+│   │   └── debugging/      # 调试技巧
 │   ├── accessibility/      # 无障碍访问
 │   ├── performance/        # 性能优化基础
 │   ├── security/           # 安全基础
