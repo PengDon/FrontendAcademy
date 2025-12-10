@@ -71,7 +71,32 @@ FrontendAcademy/
 │   ├── typescript/         # TypeScript
 │   ├── browser-extension/  # 浏览器插件开发
 │   ├── security/           # 安全
-│   └── visualization/      # 可视化技术（Three.js、WebGL、ECharts）
+│   ├── seo/                # SEO搜索引擎优化
+│   └── visualization/      # 可视化技术
+│       ├── echarts/        # ECharts数据可视化
+│       ├── threejs/        # Three.js 3D图形库
+│       │   ├── basics/     # Three.js基础（场景、相机、渲染器）
+│       │   ├── geometry/   # 几何体
+│       │   ├── materials/  # 材质
+│       │   ├── lighting/   # 光照
+│       │   ├── texturing/  # 纹理
+│       │   ├── animation/  # 动画
+│       │   ├── interaction/# 交互
+│       │   ├── models/     # 模型加载
+│       │   ├── post-processing/ # 后期处理
+│       │   ├── performance/ # 性能优化
+│       │   └── examples/   # 示例项目
+│       └── webgl/          # WebGL底层图形编程
+│           ├── basics/     # WebGL基础概念
+│           ├── shaders/    # 着色器程序
+│           ├── buffers/    # 缓冲区管理
+│           ├── matrices/   # 矩阵变换
+│           ├── textures/   # 纹理应用
+│           ├── lighting/   # 光照实现
+│           ├── models/     # 模型加载
+│           ├── animation/  # 动画实现
+│           ├── performance/ # 性能优化
+│           └── examples/   # 综合应用示例
 └── nodejs/                 # Node.js后端
     ├── express/            # Express框架
     ├── nestjs/             # Nest.js框架
